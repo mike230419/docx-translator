@@ -36,6 +36,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/translate_filled.exe
-          tag_name: v1.0.0
+          files: dist/docx-translator.exe
+          tag_name: v1.0.1
           token: ${{ secrets.GH_TOKEN }}
