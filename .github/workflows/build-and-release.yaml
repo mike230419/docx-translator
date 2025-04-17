@@ -1,0 +1,40 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Replace placeholders with secrets
+        run: |
+          $content = Get-Content main.py
+          $content = $content -replace "REPLACE_DEEP_L_API_KEY", "${{ secrets.DEEPL_API_KEY }}"
+          $content = $content -replace "REPLACE_TARGET_LANGUAGE", "${{ secrets.TARGET_LANGUAGE }}"
+          $content = $content -replace "REPLACE_SOURCE_LANGUAGE", "${{ secrets.SOURCE_LANGUAGE }}"
+          $content = $content -replace "REPLACE_FILE_NAME", "${{ secrets.FILE_NAME }}"
+          $content = $content -replace "REPLACE_API_URL", "${{ secrets.API_URL }}"
+          Set-Content -Path docx-translator.py -Value $content
+
+      - name: Build EXE with PyInstaller
+        run: pyinstaller --onefile docx-translator.py
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/translate_filled.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
