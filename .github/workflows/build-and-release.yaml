@@ -1,4 +1,4 @@
-name: Build and Release
+name: Build and publish artifact
 on:
   push:
     branches:
@@ -20,22 +20,21 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Replace placeholders with secrets
+      - name: Generate .env template
         run: |
-          $content = Get-Content main.py
-          $content = $content -replace "REPLACE_DEEP_L_API_KEY", "${{ secrets.DEEPL_API_KEY }}"
-          $content = $content -replace "REPLACE_TARGET_LANGUAGE", "${{ secrets.TARGET_LANGUAGE }}"
-          $content = $content -replace "REPLACE_SOURCE_LANGUAGE", "${{ secrets.SOURCE_LANGUAGE }}"
-          $content = $content -replace "REPLACE_FILE_NAME", "${{ secrets.FILE_NAME }}"
-          $content = $content -replace "REPLACE_API_URL", "${{ secrets.API_URL }}"
-          Set-Content -Path docx-translator.py -Value $content
+          echo SOURCE_LANGUAGE= >> .env
+          echo TARGET_LANGUAGE= >> .env
+          echo DEEP_L_API_KEY= >> .env
+          echo API_URL= >> .env
+          echo FILE_NAME= >> .env
 
       - name: Build EXE with PyInstaller
-        run: pyinstaller --onefile docx-translator.py
+        run: pyinstaller --onefile --name docx-translator main.py
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Upload build artifacts (snapshot)
+        uses: actions/upload-artifact@v4
         with:
-          files: dist/docx-translator.exe
-          tag_name: v1.0.1
-          token: ${{ secrets.GH_TOKEN }}
+          name: docx-translator-snapshot
+          path: |
+            dist/docx-translator.exe
+            .env
