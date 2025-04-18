@@ -45,12 +45,18 @@ def translate_file(api_key, api_url, target_lang, source_lang, file_name):
     }
     response = requests.post(url, headers=headers, data=body, timeout=60)
     response_data = response.json()
-    while response_data.get("status") == "translating":
+    MAX_RETRIES = 20  # Maximum number of retries
+    retries = 0
+    while response_data.get("status") == "translating" and retries < MAX_RETRIES:
         print("Waiting for translation to finish...")
         time.sleep(response_data.get("seconds_remaining", 5))
         response = requests.post(url, headers=headers, data=body, timeout=60)
         response_data = response.json()
+        retries += 1
 
+    if retries >= MAX_RETRIES:
+        print("Error: Maximum retries reached. Translation did not complete.")
+        return
     if response.json().get("status") != "done":
         print("Error: Translation failed")
         print(response.text)
