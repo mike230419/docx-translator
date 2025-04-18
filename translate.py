@@ -44,10 +44,12 @@ def translate_file(api_key, api_url, target_lang, source_lang, file_name):
         "document_key": document_key,
     }
     response = requests.post(url, headers=headers, data=body, timeout=60)
-    while response.json().get("status") == "translating":
+    response_data = response.json()
+    while response_data.get("status") == "translating":
         print("Waiting for translation to finish...")
-        time.sleep(response.json().get("seconds_remaining", 5))
+        time.sleep(response_data.get("seconds_remaining", 5))
         response = requests.post(url, headers=headers, data=body, timeout=60)
+        response_data = response.json()
 
     if response.json().get("status") != "done":
         print("Error: Translation failed")
