@@ -22,11 +22,18 @@ jobs:
 
       - name: Generate .env template
         run: |
-          echo SOURCE_LANGUAGE= >> .env
-          echo TARGET_LANGUAGE= >> .env
-          echo DEEP_L_API_KEY= >> .env
-          echo API_URL= >> .env
-          echo FILE_NAME= >> .env
+          echo "# .env template for docx-translator" > .env
+          echo "# Fill in the values below before running the application." >> .env
+          echo "# SOURCE_LANGUAGE: The source language code (e.g., 'en' for English)." >> .env
+          echo "SOURCE_LANGUAGE=" >> .env
+          echo "# TARGET_LANGUAGE: The target language code (e.g., 'fr' for French)." >> .env
+          echo "TARGET_LANGUAGE=" >> .env
+          echo "# DEEP_L_API_KEY: Your API key for the DeepL translation service." >> .env
+          echo "DEEP_L_API_KEY=" >> .env
+          echo "# API_URL: The base URL for the API (if applicable)." >> .env
+          echo "API_URL=" >> .env
+          echo "# FILE_NAME: The name of the file to be processed." >> .env
+          echo "FILE_NAME=" >> .env
 
       - name: Build EXE with PyInstaller
         run: pyinstaller --onefile --name docx-translator main.py
