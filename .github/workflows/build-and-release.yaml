@@ -1,0 +1,54 @@
+name: Build and publish artifact
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate config.env
+        run: |
+          echo "# config.env template for docx-translator" > config.env
+          echo "# Fill in the values below before running the application." >> config.env
+          echo "# SOURCE_LANGUAGE: The source language code (e.g., 'en' for English)." >> config.env
+          echo "SOURCE_LANGUAGE=" >> config.env
+          echo "# TARGET_LANGUAGE: The target language code (e.g., 'fr' for French)." >> config.env
+          echo "TARGET_LANGUAGE=" >> config.env
+          echo "# DEEP_L_API_KEY: Your API key for the DeepL translation service." >> config.env
+          echo "DEEP_L_API_KEY=" >> config.env
+          echo "# API_URL: The base URL for the API (if applicable)." >> config.env
+          echo "API_URL=" >> config.env
+          echo "# FILE_NAME: The name of the file to be processed." >> config.env
+          echo "FILE_NAME=" >> config.env
+
+      - name: Build EXE with PyInstaller
+        run: pyinstaller --onefile --name docx-translator main.py
+
+      - name: Read version from VERSION file
+        id: get_version
+        run: |
+          $version = Get-Content VERSION
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/docx-translator.exe
+            config.env
+          tag_name: v${{ steps.get_version.outputs.version }}
+          token: ${{ secrets.GH_TOKEN }}
